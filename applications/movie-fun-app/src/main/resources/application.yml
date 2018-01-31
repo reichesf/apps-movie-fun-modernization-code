@@ -3,10 +3,6 @@ spring:
     generate-ddl: true
     properties.hibernate.dialect: org.hibernate.dialect.MySQL5Dialect
 
-  datasource:
-    url: jdbc:mysql://localhost:3306/movies?useSSL=false
-    username: root
-
   mvc.view:
     prefix: /WEB-INF/
     suffix: .jsp
@@ -16,6 +12,6 @@ logging.level:
   org.superbiz.moviefun: DEBUG
 
 s3:
-  accessKey: <access key id>
-  secretKey: <secret access key>
-  bucketName: <name of the bucket>
+  accessKey: {$S3_ACCESSKEY}
+  secretKey: {$S3_SECRETKEY}
+  bucketName: {$S3_BUCKETNAME}

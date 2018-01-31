@@ -1,0 +1,23 @@
+---
+memory: 1G
+instances: 1
+applications:
+- name: album-service
+  path: applications/album-service/build/libs/album-service-1.1.0-SNAPSHOT.jar
+  routes:
+  - route: as-movie-fun-app-fluent-raven.apps.pikes.pal.pivotal.io
+  services:
+  - album-database
+- name: movie-service
+  routes:
+  - route: ms-movie-fun-app-fluent-raven.apps.pikes.pal.pivotal.io
+  path: applications/movie-service/build/libs/movie-service-1.1.0-SNAPSHOT.jar
+  services:
+  - movie-database
+- name: movie-fun-app
+  routes:
+  - route: movie-fun-app-fluent-raven.apps.pikes.pal.pivotal.io
+  path: applications/movie-fun-app/build/libs/movie-fun-app-1.1.0-SNAPSHOT.war
+  env:
+    ALBUMS_URL: http://as-movie-fun-app-fluent-raven.apps.pikes.pal.pivotal.io/albums
+    MOVIES_URL: http://ms-movie-fun-app-fluent-raven.apps.pikes.pal.pivotal.io/movies
