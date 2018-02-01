@@ -19,11 +19,30 @@ flyway {
     outOfOrder = false
 }
 
-task cfMigrate(type: FlywayMigrateTask) {
-    extension = new FlywayExtension(
-            url: "jdbc:mysql://127.0.0.1:63306/cf_84bdc9f7_9d66_4d04_84dd_c52f63a4fde9",
-            user: "QYdjJZLZMCFlCBck",
-            password: "ByG3VyqdQ1qOiEka",
-            outOfOrder: false
-    )
+def tunnelProcess
+
+task openTunnel {
+    doLast {
+        println 'Opening Tunnel'
+        Thread.start {
+            tunnelProcess = "cf ssh -N -L 63306:${getMysqlHost("movie-service")}:3306 movie-service".execute()
+        }
+
+        sleep 5_000L
+    }
 }
+
+task closeTunnel {
+    doLast {
+        println 'Closing Tunnel'
+        tunnelProcess.destroy()
+    }
+}
+
+task cfMigrate(type: FlywayMigrateTask, dependsOn: openTunnel) {
+    if (System.env.CF_MIGRATE) {
+        extension = setupProdFlywayExtension(new FlywayExtension(), "movie-service")
+    }
+}
+
+cfMigrate.finalizedBy closeTunnel

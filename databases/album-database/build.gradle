@@ -18,11 +18,31 @@ flyway {
     user = "root"
     outOfOrder = false
 }
-task cfMigrate(type: FlywayMigrateTask) {
-    extension = new FlywayExtension(
-            url: "jdbc:mysql://127.0.0.1:63306/cf_267cf555_00c8_4ded_a95c_f0b0ccfd5630",
-            user: "lAf0jEyoeEyU2Eu9",
-            password: "kUEankuX9iGO1Qj6",
-            outOfOrder: false
-    )
+
+def tunnelProcess
+
+task openTunnel {
+    doLast {
+        println 'Opening Tunnel'
+        Thread.start {
+            tunnelProcess = "cf ssh -N -L 63306:${getMysqlHost("album-service")}:3306 album-service".execute()
+        }
+
+        sleep 5_000L
+    }
 }
+
+task closeTunnel {
+    doLast {
+        println 'Closing Tunnel'
+        tunnelProcess.destroy()
+    }
+}
+
+task cfMigrate(type: FlywayMigrateTask, dependsOn: openTunnel) {
+    if (System.env.CF_MIGRATE) {
+        extension = setupProdFlywayExtension(new FlywayExtension(), "album-service")
+    }
+}
+
+cfMigrate.finalizedBy closeTunnel
